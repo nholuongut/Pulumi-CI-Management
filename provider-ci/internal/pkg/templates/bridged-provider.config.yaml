@@ -1,0 +1,253 @@
+# provider is the name of the provider without the pulumi-prefix e.g. "aws"
+# This MUST be set in every provider
+#provider: xyz
+
+# organization is the name of the Github organization the repository lives in. Defaults to 'pulumi'
+organization: pulumi
+
+# major version of the current provider - used in make files
+# This should always be set by all providers as this is key to go module paths.
+major-version: 2
+
+# List of pulumi plugins to install in the "install_plugins" makefile target. Will include at least the terraform plugin
+# Should be set for all bridged providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22plugins%3A%22&type=code
+#plugins:
+# - name: terraform
+#   version: "1.0.16"
+#   kind: converter
+
+# The path to the Go code location to set the version for the provider.
+# Only set for 3 providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22providerVersion%3A%22&type=code
+#providerVersion: github.com/org/terraform-provider-xyz/version.ProviderVersion
+
+# If set, javaGenVersion ensures a specific javaGen version is used during upgrades.
+# Set for 2 providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22javaGenVersion%3A%22&type=code
+#javaGenVersion: 0.0.0
+
+# upstreamProviderOrg is optional and used in the bridge upgrade config.
+# Only set for 4 providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22upstreamProviderOrg%3A%22&type=code
+#upstreamProviderOrg: terraform-providers
+
+# upstream-provider-repo is used in the bridge upgrade config.
+# Only set for 5 providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22upstream-provider-repo%22&type=code
+#upstream-provider-repo: terraform-provider-xyz
+
+# lint includes an extra lint job in workflows if enabled (default). Can be set explicit to false.
+# This is false in around 8 provider repos: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22lint%3A+false%22&type=code
+lint: true
+
+# providerDefaultBranch is used to customise the default branch when needed
+# Currently set in around 17 repos: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22providerDefaultBranch%3A%22&type=code
+providerDefaultBranch: master
+
+# Sets PULUMI_MISSING_MAPPING_ERROR and PULUMI_EXTRA_MAPPING_ERROR in resync-build
+# Used in alicloud only: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22fail-on-missing-mapping%3A%22&type=code
+fail-on-missing-mapping: true
+# Not used: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22fail-on-extra-mapping%3A%22&type=code
+fail-on-extra-mapping: true
+
+# publishRegistry decides if create_docs_build happens during release
+# This can be overridden to false to not publish updates.
+# This is disabled in 5 repos: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22publishRegistry%3A%22&type=code
+publishRegistry: true
+
+# checkoutSubmodules is used for all checkouts during CI
+# Only 3 providers use submodules: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22checkoutSubmodules%3A%22&type=code
+checkoutSubmodules: false
+
+# testMasterAndReleaseWorkflows runs the master and release workflows on every pull request.
+# This option is currently never set to true: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22testMasterAndReleaseWorkflows%3A%22&type=code
+testMasterAndReleaseWorkflows: false
+
+# Set to true to clear disk space before running prerequisites workflow.
+# This is used for larger providers which sometimes run out of disk space during builds.
+freeDiskSpaceBeforeBuild: false
+
+# Set to true to clear disk space before running test jobs.
+freeDiskSpaceBeforeTest: false
+
+# Set to true to clear disk space before running sdk build jobs.
+freeDiskSpaceBeforeSdkBuild: false
+
+# Used for centrally managing tool versions.
+# This is not currently overridden by any providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22toolVersions%22&type=code
+toolVersions:
+  dotnet: "6.0.x"
+  go: "1.21.x"
+  java: "11"
+  gradle: "7.6"
+  nodejs: "20.x"
+  pulumi: "dev"
+  python: "3.11.8"
+
+# Control which language SDKs get built and published.
+languages:
+  - nodejs
+  - python
+  - dotnet
+  - go
+  - java
+
+# env contains an assortment of properties for different purposes.
+# Additional entries are added by individual providers for different reasons.
+# All jobs currently get the same env for all steps but values might only be used for very specific purposes.
+env:
+  # Use custom token so we've got full access to GitHub
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # Used by pulumi-package-publisher
+  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  # Appears obsolete - was used by old ci-scripts
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  # Used by pulumi-package-publisher
+  NUGET_PUBLISH_KEY: ${{ secrets.NUGET_PUBLISH_KEY }}
+  # Used indirectly by gradle in pulumi-package-publisher?
+  PUBLISH_REPO_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+  PUBLISH_REPO_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+  # Used to access staging API for tests
+  PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+  PULUMI_API: https://api.pulumi-staging.io
+  # Allows tests to resolve the local SDK - should be set in test setup or makefile instead
+  PULUMI_GO_DEP_ROOT: ${{ github.workspace }}/..
+  # Should be set in test setup or makefile instead
+  PULUMI_LOCAL_NUGET: ${{ github.workspace }}/nuget
+  # Used by pulumi-package-publisher
+  PYPI_USERNAME: __token__
+  PYPI_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+  # Used indirectly by Java publishing in pulumi-package-publisher?
+  SIGNING_KEY: ${{ secrets.JAVA_SIGNING_KEY }}
+  SIGNING_KEY_ID: ${{ secrets.JAVA_SIGNING_KEY_ID }}
+  SIGNING_PASSWORD: ${{ secrets.JAVA_SIGNING_PASSWORD }}
+  # Bridge-related - could be set in makefile instead?
+  TF_APPEND_USER_AGENT: pulumi
+
+# actions can contain preBuild and preTest additional steps to be spliced into workflows.
+# The use of these hooks vary - quite a few just build upstream and run provider tests.
+# Usage: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22actions%3A%22&type=code
+actions: {}
+  # preBuild:
+  #  - Your action here
+  # preTest:
+  #  - Your action here
+
+# Additional tests run as part of `run-acceptance-tests.yml`, `master.yml`, `main.yml`,
+# `prerelease.yml` and `release.yml`.
+# Only used for aws: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22extraTests%3A%22&type=code
+extraTests:
+#   your_test_name:
+#     name: My Test
+#     ...
+
+# Run e2e tests in the provider as well as in the examples directory
+integrationTestProvider: false
+
+# Run e2e tests using the examples and test suite in the pulumi/examples repo.
+# This is unused: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22testPulumiExamples%3A%22&type=code
+testPulumiExamples: false
+
+# runner defines the runs-on property for various stages of the build
+# These are not overridden by any providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22runner%3A%22&type=code
+runner:
+  default: ubuntu-latest
+  prerequisites: ubuntu-latest
+  # publish: ubuntu-latest
+  # buildSdk: ubuntu-latest
+
+# actionVersions should be used wherever we use external actions to make upgrading easier.
+# These are never overridden by providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22actionVersions%3A%22&type=code
+actionVersions:
+  configureAwsCredentials: aws-actions/configure-aws-credentials@v4
+  setupGcloud: google-github-actions/setup-gcloud@v2
+  googleAuth: google-github-actions/auth@v2
+  checkout: actions/checkout@v4
+  downloadArtifact: actions/download-artifact@v4
+  pathsFilter: dorny/paths-filter@v2
+  prComment: thollander/actions-comment-pull-request@v2
+  uploadArtifact: actions/upload-artifact@v4
+  upgradeProviderAction: pulumi/pulumi-upgrade-provider-action@v0.0.12
+  freeDiskSpace: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+
+# publish contains multiple properties relating to the publish jobs.
+# Used by 2 providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22publish%3A%22&type=code
+publish:
+  # publisherAction is the version of the pulumi-package-publisher action to use.
+  # This should be pinned to just the major version once v1 is released.
+  publisherAction: pulumi/pulumi-package-publisher@v0.0.20
+  # passed to the sdk input of pulumi-package-publisher
+  # This is overridden in pulumi-local to disable python
+  sdk: all
+  # Publish the plugin binaries to the Pulumi CDN (get.pulumi.com) - requires AWS credentials for S3 upload
+  cdn: true
+
+# Enables automatic registry index doc file generation. Intended for use with Tier 2/3 providers.
+registryDocs: false
+
+# Set a path for each language example to enable the test
+# releaseVerification:
+  # nodejs: examples/simple-nodejs
+  # python: examples/simple-python
+  # dotnet: examples/simple-dotnet
+  # go: exampels/simple-go
+
+# List of extra flags used in Makefile.
+# Only used by newrelic: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22extra-ld-flags%22&type=code
+#extra-ld-flags:
+# - "-X github.com/newrelic/terraform-provider-newrelic/v2/main.UserAgentServiceName=pulumi"
+
+# Sets PULUMI_PROVIDER_BUILD_PARALLELISM in the makefile
+# Used in 5 providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22goBuildParallelism%22&type=code
+#goBuildParallelism: 1
+
+# Sets PULUMI_CONVERT to 1 if truthy
+# Is set to "1" in 74 providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22pulumiConvert%22&type=code
+#pulumiConvert: false
+
+# Adds a "docs" target in the makefile
+# Used only in pulumi-docker: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22docsCmd%3A%22&type=code
+#docsCmd: "cd provider/pkg/docs-gen/examples/ && go run generate.go ./yaml ./"
+
+# Adds extra steps for AWS's upstream make target
+#XrunUpstreamTools
+
+# Configure AWS credentials before running tests in CI job
+# Used in 4 providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22aws%3A%22&type=code
+#aws: false
+
+# Run testing/docker-compose.yml up before running tests in CI job
+# Used in 9 providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22docker%3A%22&type=code
+#docker: false
+
+# Setup SSH with specified private key before running tests in CI job.
+# This should be provided from a secret
+# Used by the docker provider only: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22sshPrivateKey%3A%22&type=code
+#sshPrivateKey: ${{ secrets.PRIVATE_SSH_KEY_FOR_DIGITALOCEAN }}
+
+# Authenticate with GCP before running tests in CI job
+# Used in gcp and docker: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22gcp%3A%22&type=code
+#gcp: false
+
+# Enable logging into the GCP registry before running tests in CI job
+# Only used for docker: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22gcpRegistry%3A%22&type=code
+#gcpRegistry: false
+
+# Execute a script before running tests in CI job
+# Used in 3 providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22setup-script%3A%22&type=code
+#setup-script: testing/setup.sh
+
+# Set to true to include the nightly-test workflow
+# Used in 11  providers: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22generate-nightly-test-workflow%3A%22&type=code
+#generate-nightly-test-workflow: false
+
+# List of objects with `name` and `version` properties for the devbox packages.
+# Unused: https://github.com/search?q=org%3Apulumi+path%3A.ci-mgmt.yaml+%22nixpkgs%3A%22&type=code
+#nixpkgs:
+# - name: foo
+#   version: 1.2.3
+
+# Package paths to ignore when running the license check
+#license:
+#  ignore:
+#    # Add comment to explain why skipping this license check is OK, e.g. "These projects don't have a LICENSE file,
+#    # but do say mention (in README.md) that they are under Apache-2.0."
+#    - github.com/alibabacloud-go/endpoint-util/service
+#    - github.com/alibabacloud-go/tea-roa-utils/service
+#    - github.com/alibabacloud-go/tea-roa/client
