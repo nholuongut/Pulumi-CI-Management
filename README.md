@@ -140,3 +140,13 @@ You can apply ad-hoc source edits across provider repositories even on files tha
 - merge the PR to ci-mgmt
 
 - merge the PR to the desired provider repositories (not needed if these PRs are set to automerge)
+  
+### [Contact an Author]
+* [Name: nho Luong]
+* [Skype](luongutnho_skype)
+* [Github](https://github.com/nholuongut/)
+* [Linkedin](https://www.linkedin.com/in/nholuong/)
+* [Email Address](luongutnho@hotmail.com) 
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nholuong)
+  
